@@ -1098,6 +1098,48 @@ COMMAND_HANDLER(efm32x_handle_debuglock_command)
 	return ERROR_OK;
 }
 
+COMMAND_HANDLER(efm32x_handle_bsl_command)
+{
+	struct target *target = NULL;
+
+	if (CMD_ARGC < 1)
+		return ERROR_COMMAND_SYNTAX_ERROR;
+
+	struct flash_bank *bank;
+	int retval = get_flash_bank_by_num(0, &bank);
+	if (ERROR_OK != retval)
+		return retval;
+
+	struct efm32x_flash_bank *efm32x_info = bank->driver_priv;
+
+	target = bank->target;
+
+	if (target->state != TARGET_HALTED) {
+		LOG_ERROR("Target not halted");
+		return ERROR_TARGET_NOT_HALTED;
+	}
+
+	uint32_t *ptr;
+	ptr = efm32x_info->lb_page + 122;
+	
+	if (strcmp("on", CMD_ARGV[0]) == 0) {
+		command_print(CMD_CTX, "bsl will be on");
+		*ptr |= (uint32_t)(1 << 1);
+	} else if (strcmp("off", CMD_ARGV[0]) == 0) {
+		command_print(CMD_CTX, "bsl will be off");
+		*ptr &= ~(uint32_t)(1 << 1);
+	} else
+		return ERROR_COMMAND_SYNTAX_ERROR;
+
+	retval = efm32x_write_lock_data(bank);
+	if (ERROR_OK != retval) {
+		LOG_ERROR("Failed to write LB page");
+		return retval;
+	}
+
+	return ERROR_OK;
+}
+
 static const struct command_registration efm32x_exec_command_handlers[] = {
 	{
 		.name = "debuglock",
@@ -1105,6 +1147,13 @@ static const struct command_registration efm32x_exec_command_handlers[] = {
 		.mode = COMMAND_EXEC,
 		.usage = "bank_id",
 		.help = "Lock the debug interface of the device.",
+	},
+	{
+		.name = "bsl",
+		.handler = efm32x_handle_bsl_command,
+		.mode = COMMAND_EXEC,
+		.usage = "(on|off)",
+		.help = "Start or skip bootloader on power on.",
 	},
 	COMMAND_REGISTRATION_DONE
 };

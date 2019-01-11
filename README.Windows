@@ -58,3 +58,19 @@ For more information, see:
 
   http://msdn.microsoft.com/en-us/library/windows/hardware/jj649944(v=vs.85).aspx
   http://www.ftdichip.com/Support/Knowledgebase/index.html?ignorehardwareserialnumber.htm
+
+  
+Vasilyev comment:
+pacman -Suy
+MINGW_PACKAGE_PREFIX="mingw-w64-x86_64"
+pacman -S ${MINGW_PACKAGE_PREFIX}-gcc
+pacman -S ${MINGW_PACKAGE_PREFIX}-binutils
+pacman -S ${MINGW_PACKAGE_PREFIX}-tcl
+pacman -S ${MINGW_PACKAGE_PREFIX}-libtool
+pacman -S ${MINGW_PACKAGE_PREFIX}-hidapi
+pacman -S ${MINGW_PACKAGE_PREFIX}-libusb-compat
+pacman -S ${MINGW_PACKAGE_PREFIX}-libftdi
+pacman -S gettext make pkg-config unzip autoconf automake patch subversion
+pacman -S base-devel
+export PATH=${PATH}:/mingw64/bin
+export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/mingw64/lib/pkgconfig   #this helps openOCD's configure script find libusb in mingw64
